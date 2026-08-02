@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: backend-deployment
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: backend-ticketdashboard
+
+  template:
+    metadata:
+      labels:
+        app: backend-ticketdashboard
+
+    spec:
+      containers:
+      - name: backend-ticketdashboard-container
+        image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard-backend:v1
+
+        ports:
+        - containerPort: 4000
+
+        env:
+        - name: PGHOST
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: PGHOST
+
+        - name: PGPORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: PGPORT
+
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: PGDATABASE
+
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: PGUSER
+
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: PGPASSWORD
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: ticketdashboard-backend-service
+
+spec:
+  selector:
+    app: backend-ticketdashboard
+
+  ports:
+  - port: 4000
+    targetPort: 4000
+
+  type: ClusterIP
