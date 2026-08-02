@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+ name: ticketdashboard-frontend
+
+spec:
+ replicas: 2
+ selector:
+  matchLabels:
+   app: ticketdashboard
+ template:
+  metadata:
+   labels:
+    app: ticketdashboard
+  spec:
+   containers:
+    - name : ticketdashboard-frontend
+      image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard:v2
+      ports:
+       - containerPort: 80
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: ticketdashboard-service
+
+spec:
+  selector:
+    app: ticketdashboard
+
+  ports:
+  - port: 80
+    targetPort: 80
+
+  type: LoadBalancer
