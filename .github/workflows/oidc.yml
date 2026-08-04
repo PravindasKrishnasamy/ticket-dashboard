@@ -1,27 +1,26 @@
-name: OIDC-TEST
+name: Test AWS OIDC Connection
 
 on:
-  push:
-    branches:
-      - aws-oidc
+  workflow_dispatch: # Allows you to manually click a button on GitHub to test it
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write   # CRITICAL: This is required to request the OIDC JWT token from GitHub
+  contents: read    # Required to read repository contents
 
 jobs:
-  test-oidc:
+  test-connection:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository 
-        uses: actions/checkout@v4 
+      - name: Git clone repository
+        uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials 
-        uses: aws-actions/configure-aws-credentials@v4 
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::354354997349:role/githubaction-role
-          aws-region: ap-south-1 
+          role-to-assume: arn:aws:iam::354354997349:role/github-userrole # REPLACE WITH YOUR ROLE ARN
+          aws-region: ap-south-1 # Replace with your target AWS Region
 
       - name: Verify AWS Identity
-        run: aws sts get-caller-identity
+        run: |
+          aws sts get-caller-identity
 
