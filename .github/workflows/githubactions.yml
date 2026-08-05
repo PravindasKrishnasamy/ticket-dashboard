@@ -1,15 +1,27 @@
-name: Deployment
+name: Production_Deployment
 on:
  workflow_dispatch:
 jobs:
- build:
+ backend_build:
    runs-on: ubuntu-latest
    steps:
      - name: Checking out repository
        uses: actions/checkout@v4
      
      - name: Building Backend Docker image 
-       run:  docker build -f ./backend/dockerfile -t backend:latest ./backend
+       run:  docker build -f ./backend/dockerfile -t backend:v1 ./backend
    
      - name: verify images
        run: docker images -a
+frontend_build:
+     runs-on: ubuntu-latest
+     steps:
+       - name: checking out repository
+         uses: actions/checkout@v4
+       
+       - name: Building frontend Docker image
+         run: docker build -f ./frontend/dockerfile -t frontend:v1 ./frontend
+
+
+       - name: Verify images
+         run: docker images -a
