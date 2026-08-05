@@ -1,9 +1,15 @@
-name: listing-files
+name: Deployment
 on:
- push:
+ workflow_dispatch:
 jobs:
  build:
    runs-on: ubuntu-latest
    steps:
-     - uses: actions/checkout@v4
-     - run: ls -a
+     - name: Checking out repository
+       uses: actions/checkout@v4
+     
+     - name: Building Backend Docker image 
+       run:  docker build -f ./backend/dockerfile -t backend:latest ./backend
+   
+     - name: verify images
+       run: docker images -a
