@@ -22,13 +22,11 @@ jobs:
           echo "Ref Name   : $GITHUB_REF_NAME"
           echo "Actor      : $GITHUB_ACTOR"
 
-      - name: Debug OIDC Claims
-        uses: github/actions-oidc-debugger@main
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          role-session-name: github-actions-test
           aws-region: ap-south-1
 
       - name: Verify AWS Identity
