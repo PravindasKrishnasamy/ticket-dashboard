@@ -1,0 +1,75 @@
+name: Production_Deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  backend_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          aws-region: ap-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build \
+          -f ./backend/dockerfile \
+          -t ${{ steps.login-ecr.outputs.registry }}/backend:${{ github.sha }} \
+          ./backend
+
+      - name: Verify Backend Image
+        run: docker images
+
+      - name: Push Backend Image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/backend:${{ github.sha }}
+
+
+  frontend_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          aws-region: ap-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Frontend Docker Image
+        run: |
+          docker build \
+          -f ./frontend/dockerfile \
+          -t ${{ steps.login-ecr.outputs.registry }}/frontend:${{ github.sha }} \
+          ./frontend
+
+      - name: Verify Frontend Image
+        run: docker images
+
+      - name: Push Frontend Image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/frontend:${{ github.sha }}

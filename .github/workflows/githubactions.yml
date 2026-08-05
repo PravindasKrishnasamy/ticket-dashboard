@@ -13,6 +13,13 @@ jobs:
    
      - name: verify images
        run: docker images -a
+    
+     - name: Configure aws credentials
+       uses: aws-actions/configure-aws-credentials@v4
+       with:
+         role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+         aws-region: ap-south-1
+
  frontend_build:
      runs-on: ubuntu-latest
      steps:
@@ -21,7 +28,17 @@ jobs:
        
        - name: Building frontend Docker image
          run: docker build -f ./frontend/dockerfile -t frontend:v1 ./frontend
-
+      
+       - name: Configure aws credentials
+       uses: aws-actions/configure-aws-credentials@v4
+       with: 
+         role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+         aws-region: ap-south-1
 
        - name: Verify images
          run: docker images -a
+       - name: Configure aws credentials
+       uses: aws-actions/configure-aws-credentials@v4
+       with: 
+         role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+         aws-region: ap-south-1
