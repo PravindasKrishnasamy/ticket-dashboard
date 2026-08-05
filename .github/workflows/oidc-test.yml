@@ -1,4 +1,4 @@
-name: OIDC Test
+name: OIDC Debug
 
 on:
   workflow_dispatch:
@@ -8,26 +8,22 @@ permissions:
   contents: read
 
 jobs:
-  oidc-test:
+  debug:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Print GitHub Context
         run: |
           echo "Repository : $GITHUB_REPOSITORY"
           echo "Ref        : $GITHUB_REF"
           echo "Ref Name   : $GITHUB_REF_NAME"
-          echo "Actor      : $GITHUB_ACTOR"
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
-          role-session-name: github-actions-test
-          aws-region: ap-south-1
+      - name: Print OIDC Token Claims
+        run: |
+          TOKEN=$(curl -s \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r '.value')
 
-      - name: Verify AWS Identity
-        run: aws sts get-caller-identity
+          echo "$TOKEN" | cut -d "." -f2 | base64 -d | jq
