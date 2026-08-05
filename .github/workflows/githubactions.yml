@@ -13,7 +13,7 @@ jobs:
    
      - name: verify images
        run: docker images -a
-frontend_build:
+ frontend_build:
      runs-on: ubuntu-latest
      steps:
        - name: checking out repository
