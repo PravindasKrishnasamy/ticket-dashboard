@@ -1,0 +1,120 @@
+name: Production Deployment4
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER: eks-learning
+
+  BACKEND_REPO: ticketdashboard-backend
+  FRONTEND_REPO: ticketdashboard
+
+jobs:
+
+  backend:
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ github.sha }}
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Backend
+        run: |
+          docker build \
+          -f backend/dockerfile \
+          -t ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPO }}:${{ github.sha }} \
+          backend
+
+      - name: Push Backend
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPO }}:${{ github.sha }}
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ github.sha }}
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Frontend
+        run: |
+          docker build \
+          -f frontend/dockerfile \
+          -t ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPO }}:${{ github.sha }} \
+          frontend
+
+      - name: Push Frontend
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPO }}:${{ github.sha }}
+
+  deploy:
+
+    needs:
+      - backend
+      - frontend
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::354354997349:role/github-actions-eks-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+          --region $AWS_REGION \
+          --name $EKS_CLUSTER
+
+      - name: Verify Cluster
+        run: kubectl get nodes
+
+      - name: Update Backend Image
+        run: |
+          kubectl set image deployment/backend-deployment \
+          backend-ticketdashboard-container=354354997349.dkr.ecr.ap-south-1.amazonaws.com/${BACKEND_REPO}:${GITHUB_SHA}
+
+      - name: Update Frontend Image
+        run: |
+          kubectl set image deployment/ticketdashboard-frontend \
+          ticketdashboard-frontend=354354997349.dkr.ecr.ap-south-1.amazonaws.com/${FRONTEND_REPO}:${GITHUB_SHA}
+
+      - name: Verify Rollout
+        run: |
+          kubectl rollout status deployment/backend-deployment
+          kubectl rollout status deployment/ticketdashboard-frontend

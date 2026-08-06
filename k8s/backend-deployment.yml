@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: backend-ticketdashboard-container
-        image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard-backend:v2
+        image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard-backend:initial
 
         ports:
         - containerPort: 4000

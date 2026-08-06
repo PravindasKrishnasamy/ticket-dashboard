@@ -15,7 +15,7 @@ spec:
   spec:
    containers:
     - name : ticketdashboard-frontend
-      image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard:v3
+      image: 354354997349.dkr.ecr.ap-south-1.amazonaws.com/ticketdashboard:initial
       ports:
        - containerPort: 80
 ---
